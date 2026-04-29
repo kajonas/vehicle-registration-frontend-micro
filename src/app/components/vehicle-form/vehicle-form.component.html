@@ -1,0 +1,57 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <label>Owner:</label>
+  <input formControlName="owner" />
+
+  <label>VIN:</label>
+  <input formControlName="vin" />
+
+  <label>Year:</label>
+  <input type="number" formControlName="year" />
+
+  <label>Make:</label>
+  <select formControlName="make">
+    <option *ngFor="let make of makes" [ngValue]="make">{{ make.name }}</option>
+  </select>
+
+  <label>Model:</label>
+  <select formControlName="model">
+    <option *ngFor="let model of models" [ngValue]="model">{{ model.name }}</option>
+  </select>
+
+  <button type="submit" [disabled]="form.invalid">Submit</button>
+</form>
+
+<hr />
+
+<h3>Saved Vehicles</h3>
+<div *ngIf="vehicles.length === 0">No vehicles found.</div>
+
+<div style="max-height: 300px; overflow-y: auto;" *ngIf="vehicles.length > 0">
+  <table>
+    <thead>
+    <tr>
+      <th>Owner</th>
+      <th>VIN</th>
+      <th>Make</th>
+      <th>Model</th>
+      <th>Year</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let vehicle of paginatedVehicles()">
+      <td>{{ vehicle.owner }}</td>
+      <td>{{ vehicle.vin }}</td>
+      <td>{{ vehicle.make.name }}</td>
+      <td>{{ vehicle.model.name }}</td>
+      <td>{{ vehicle.year }}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="vehicles.length > 10" style="margin-top: 1rem;">
+  <button (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+  <span>Page {{ currentPage }} of {{ totalPages() }}</span>
+  <button (click)="nextPage()" [disabled]="currentPage === totalPages()">Next</button>
+</div>
+
