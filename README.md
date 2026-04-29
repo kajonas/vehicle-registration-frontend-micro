@@ -55,7 +55,7 @@ netstat -ano | findstr :4200
 taskkill /PID <PID> /F
 ```
 
-> **Note:** Development uses Angular's dev proxy (`proxy.conf.json`) to forward API calls to `http://localhost:8080` and avoid browser CORS issues.
+> **Note:** Development requests are configured to call `http://localhost:8080` directly via `src/environments/environment.ts`.
 > Keep the backend running on port `8080` while using `npm start`.
 
 ---
@@ -86,6 +86,77 @@ The production output is generated at `dist/vehicle-registration-frontend`. The 
 
 ---
 
+## Build and Run with Docker Desktop
+
+This project includes a multi-stage `Dockerfile` that builds the Angular app and serves it with Nginx.
+The Docker image is configured to run a development build (`npm run build:dev`), so it uses `src/environments/environment.ts` (`apiBaseUrl: http://localhost:8080`).
+
+You can use either direct Docker commands or Docker Compose.
+
+### 1. Build the Docker image
+
+```powershell
+docker build -t vehicle-registration-frontend:latest .
+```
+
+### 2. Run the container
+
+```powershell
+docker run --name vehicle-registration-frontend -d -p 8088:80 vehicle-registration-frontend:latest
+```
+
+Open the app at `http://localhost:8088`.
+
+### 3. Verify container is running
+
+```powershell
+docker ps --filter "name=vehicle-registration-frontend"
+docker logs vehicle-registration-frontend
+```
+
+### 4. Stop and remove the container
+
+```powershell
+docker stop vehicle-registration-frontend
+docker rm vehicle-registration-frontend
+```
+
+### Optional: Use Docker Compose (recommended for repeat runs)
+
+The project includes `docker-compose.yml` so you can build and run with one command set.
+
+```powershell
+docker compose build
+docker compose up -d
+```
+
+Open the app at `http://localhost:8088`.
+
+```powershell
+docker compose ps
+docker compose logs -f frontend
+```
+
+Stop services (container remains available to restart quickly):
+
+```powershell
+docker compose stop
+```
+
+Stop and remove the container/network:
+
+```powershell
+docker compose down
+```
+
+### Notes about backend API when running in Docker
+
+- The container serves frontend files only; backend API must run separately.
+- Docker image API URL is defined in `src/environments/environment.ts`.
+- If your backend is not reachable at `http://localhost:8080`, update `apiBaseUrl` in `src/environments/environment.ts`, then rebuild the image.
+
+---
+
 ## Running Tests
 
 ```bash
@@ -98,12 +169,14 @@ npm test
 
 | File | Used when |
 |------|-----------|
-| `src/environments/environment.ts` | Development (`ng serve`, `npm run build:dev`) - uses relative API paths through the dev proxy |
+| `src/environments/environment.ts` | Development (`ng serve`, `npm run build:dev`) and Docker image build (`Dockerfile`) |
 | `src/environments/environment.prod.ts` | Production (`npm run build`, `npm run build:prod`) |
 
-To change the backend API URL for production, edit `apiBaseUrl` in `src/environments/environment.prod.ts`.
+To change the backend API URL used by development and Docker image builds, edit `apiBaseUrl` in `src/environments/environment.ts`.
 
-For local development proxy targets, edit `proxy.conf.json`.
+To change the backend API URL for production builds, edit `apiBaseUrl` in `src/environments/environment.prod.ts`.
+
+If you switch back to relative API paths, local proxy targets are configured in `proxy.conf.json`.
 
 ---
 
